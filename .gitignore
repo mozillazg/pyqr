@@ -4,3 +4,4 @@
 /dev_server.py
 *.pyc
 *.swp
+/chardet
