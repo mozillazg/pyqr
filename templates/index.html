@@ -1,0 +1,39 @@
+$def with(api_url)
+
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Online QR Code Generator</title>
+
+        <meta charset="utf-8" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="description" content="Online QR Code Generator" />
+
+        <style>
+            /* body {
+                text-align: left;
+            } */
+            #main {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        </style>
+    </head>
+    <body>
+    <div id="main">
+        <h1>Online QR Code Generator</h1>
+        <h2>API example:</h2>
+        <a href='$api_url', title='api example'>$api_url</a>
+        <div id="form">
+            <form method="get" action="$site/qr">
+                <input type="hidden" name="chs" value="300x300" />
+                <textarea id="text" name="chl">
+                </textarea>
+                <input type="submit" />
+            </form>
+        </div>
+    </div>
+    </body>
+</html>
+

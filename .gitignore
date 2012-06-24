@@ -1,0 +1,6 @@
+
+/qrcode
+/index.wsgi.space.py
+/dev_server.py
+*.pyc
+*.swp
