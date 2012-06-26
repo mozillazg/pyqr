@@ -9,14 +9,16 @@ $def with(api_url)
         <meta charset="utf-8" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="description" content="Online QR Code Generator" />
-
+        <link href="/static/favicon.ico" rel="shortcut icon" type="image/x-icon" />
         <style>
-            /* body {
-                text-align: left;
-            } */
             #main {
-                margin-left: auto;
-                margin-right: auto;
+                margin: 4em auto;
+                max-width: 30em;
+                min-width: 13em;
+            }
+            #textarea {
+                -moz-border-radius: 5px;
+                border-radius: 5px;
             }
         </style>
     </head>
@@ -28,8 +30,7 @@ $def with(api_url)
         <div id="form">
             <form method="get" action="$site/qr">
                 <input type="hidden" name="chs" value="300x300" />
-                <textarea id="text" name="chl">
-                </textarea>
+                <textarea id="textarea" name="chl" required="true" autofocus="true" value=""></textarea>
                 <input type="submit" />
             </form>
         </div>

@@ -41,53 +41,9 @@ class Index(object):
 class QR(object):
     """处理传来的数据并显示 QR Code 二维码图片
     """
-    def GET(self):
-        # TODO 解决 IE 浏览器下地址栏输入中文出现编码错误的文
-        # TODO google 是直接将在地址栏输入的参数重定向为 '' , 不用那么复杂
-        # query = web.ctx.query # 它将字符都变成了类似 u'%B3%B5' 导致不能猜测编码 
-        query = web.ctx.env['QUERY_STRING'] # 解决非 IE 浏览器下地址栏输入中文出现的编码问题
-        print query
-        if query == '':
-            chl = ''
-            chs = '300x300'
-        else:
-            query = query.split('&')
-            query = dict([tuple(i) for i in [x.split('=') for x in query]])
-            print query
-            # query = web.storage(query)
-            # try:
-            # text = web.input(chl='', chs='320x320')
-            # except UnicodeDecodeError:
-                # return web.seeother('/')
-            chl = query.get('chl', '')
-            chs = query.get('chs', '300x300')
-            chl = chl.replace('+', '%20') # 解决空格变加号，替换空格为 '%20'
-        print repr(chl)
-        import urllib2
-        chl = urllib2.unquote(chl)
-        print repr(chl)
-        import chardet
-        dete = chardet.detect(chl)
-        print dete
-        if dete['confidence'] < 0.99:
-            import chardete
-            print repr(chl)
-            chl = chardete.dete(chl)
-            print repr(chl)
-            # if charest is None:
-                # raise web.seeother('/')
-        else:
-            charest = dete['encoding']
-            chl = chl.decode(charest).encode('utf8')
-            print repr(chl)
-        if len(chl) > 700:
-            # return web.seeother('/')
-            chl = ''
-        im = qrcode.make(chl)
-        try:
-            size = tuple([int(i) for i in chs.split('x')])
-        except:
-            return web.seeother('/')
+    def show_image(self, im, size):
+        """返回图片 MIME 及 内容，用于显示图片
+        """
         # Try to import PIL in either of the two ways it can be installed.
         try:
             from PIL import Image, ImageDraw
@@ -118,8 +74,73 @@ class QR(object):
         new_im_data = new_im_name.getvalue()
         MIME = ImageMIME().get_image_type(new_im_data)
         new_im_name.close()
+        return (MIME, new_im_data)
+
+    def GET(self):
+        # TODO 解决 IE 浏览器下地址栏输入中文出现编码错误的文
+        # TODO google 是直接将在地址栏输入的参数重定向为 '' , 不用那么复杂
+        # query = web.ctx.query # 它将字符都变成了类似 u'%B3%B5' 导致不能猜测编码 
+        query = web.ctx.env['QUERY_STRING'] # 解决非 IE 浏览器下地址栏输入中文出现的编码问题
+        print query
+        if query == '':
+            chl = ''
+            chs = '300x300'
+        else:
+            query = query.split('&')
+            query = dict([tuple(i) for i in [x.split('=') for x in query]])
+            # print query
+            chl = query.get('chl', '')
+            chs = query.get('chs', '300x300')
+            chl = chl.replace('+', '%20') # 解决空格变加号，替换空格为 '%20'
+        # print repr(chl)
+        import urllib2
+        chl = urllib2.unquote(chl)
+        # print repr(chl)
+        import chardet
+        dete = chardet.detect(chl)
+        # print dete
+        # TODO chardete.dete() 返回字典 {'encoding': '', 'utf8': ''}
+        if dete['confidence'] < 0.99:
+            import chardete
+            # print repr(chl)
+            chl = chardete.dete(chl)
+            # print repr(chl)
+            # if charest is None:
+                # raise web.seeother('/')
+        else:
+            charest = dete['encoding']
+            chl = chl.decode(charest).encode('utf8')
+            # print repr(chl)
+        # TODO 如果编码不是 utf8，编码(quote())后重定向到 UTF8 编码后的链接
+        if len(chl) > 700:
+            # return web.seeother('/')
+            chl = ''
+        im = qrcode.make(chl)
+        try:
+            size = tuple([int(i) for i in chs.split('x')])
+        except:
+            return web.seeother('/')
+        MIME, data = self.show_image(im, size)
         web.header('Content-Type', MIME)
-        return new_im_data
+        return data
+
+    def POST(self):
+        """处理 POST 数据
+        """
+        query = web.input(chl='', chs='300x300')
+        # 因为 web.input() 的返回的是 unicode 编码的数据，
+        # 所以将数据按 utf8 编码以便用来生成二维码
+        chl = query.chl.encode('utf8')
+        chs = query.chs
+        im = qrcode.make(chl)
+        # print '%r, %r' % (chl, chs)
+        try:
+            size = tuple([int(i) for i in chs.split('x')])
+        except:
+            return web.seeother('/')
+        MIME, data = self.show_image(im, size)
+        web.header('Content-Type', MIME)
+        return data
 
 if __name__ == '__main__':
     app.run()
