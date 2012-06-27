@@ -14,3 +14,7 @@
 
 ## TODO
 
+## Demo
+
+<http://pyqr.sinaapp.com>
+
