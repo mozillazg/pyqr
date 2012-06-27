@@ -11,28 +11,107 @@ $def with(api_url)
         <meta name="description" content="Online QR Code Generator" />
         <link href="/static/favicon.ico" rel="shortcut icon" type="image/x-icon" />
         <style>
+            body, select, button {
+              font-family: Arial Unicode MS,Arial,sans-serif;
+              font-size: small;
+            }
             #main {
                 margin: 4em auto;
-                max-width: 30em;
+                max-width: 35em;
                 min-width: 13em;
             }
-            #textarea {
+            #header span {
+              color: #5E6B75;
+              font-weight: normal;
+            }
+            #header h1 {
+              font-size: 15px;
+            }
+            h2 {
+                font-size: 14px;
+            }
+            #form {
+                margin: 1em;
+            }
+            .textarea {
                 -moz-border-radius: 5px;
                 border-radius: 5px;
+                margin: 0em 0em 1em 0em;
+            }
+            .textarea {
+              -moz-border-bottom-colors: none;
+              -moz-border-image: none;
+              -moz-border-left-colors: none;
+              -moz-border-right-colors: none;
+              -moz-border-top-colors: none;
+              border-style: solid;
+              border-width: 1px;
+              font-family: Arial Unicode MS,Arial,sans-serif;
+              font-size: 100%;
+              padding: 4px;
+            }
+            .textarea {
+              color: #000000;
+              font-weight: normal;
+              width: 300px;
+            }
+
+            .required {
+                background: url("/static/required-field-bg.png") repeat-y scroll 0 0 #FFFFFF;
+            }
+
+            .fixed {
+                    clear: both;
+                }
+            .button {
+              -moz-border-bottom-colors: none;
+              -moz-border-image: none;
+              -moz-border-left-colors: none;
+              -moz-border-right-colors: none;
+              -moz-border-top-colors: none;
+              background: url("/static/hborder.png") repeat-x scroll 0 -2077px transparent;
+              border-color: #BBBBBB #BBBBBB #A0A0A0;
+              border-radius: 3px 3px 3px 3px;
+              border-style: solid;
+              border-width: 1px;
+              cursor: pointer;
+              font-size: small;
+              margin: 0;
+              padding: 5px 7px;
+              text-decoration: none;
+            }
+            #footer {
+              padding-top: 12px;
+              text-align: center;
+              width: 100%;
+            }
+            #footer a {
+              color: #5E6B75;
+              text-decoration: none;
             }
         </style>
     </head>
     <body>
     <div id="main">
-        <h1>Online QR Code Generator</h1>
+        <div id="header">
+            <h1>
+                Online QR Code Generator
+                <span>by mozillazg</span>
+            </h1>
+        </div>
         <h2>API example:</h2>
         <a href='$api_url', title='api example'>$api_url</a>
         <div id="form">
             <form method="get" action="$site/qr">
                 <input type="hidden" name="chs" value="300x300" />
-                <textarea id="textarea" name="chl" required="true" autofocus="true" value=""></textarea>
-                <input type="submit" />
+                <textarea class="textarea required" name="chl" required="true" autofocus="true" rows="5" value=""></textarea>
+                <div class="fixed"></div>
+                <button class="button" type="submit" >Generate →</button>
             </form>
+        </div>
+
+        <div id="footer">
+          <a href="https://github.com/mozillazg/pyqr">Source Code</a>
         </div>
     </div>
     </body>

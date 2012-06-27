@@ -79,16 +79,22 @@ class QR(object):
     def GET(self):
         # TODO 解决 IE 浏览器下地址栏输入中文出现编码错误的文
         # TODO google 是直接将在地址栏输入的参数重定向为 '' , 不用那么复杂
-        # query = web.ctx.query # 它将字符都变成了类似 u'%B3%B5' 导致不能猜测编码 
+        # import os
+        # print os.environ('HTTP_REFERRER')
+        # response = app.request("/qr")
+        # print response.status
+        # query = web.ctx.query # 它及 web.input() 将字符都变成了类似 u'%B3%B5' 导致不能猜测编码 
         query = web.ctx.env['QUERY_STRING'] # 解决非 IE 浏览器下地址栏输入中文出现的编码问题
         print query
         if query == '':
-            chl = ''
-            chs = '300x300'
+            return web.badrequest()
         else:
             query = query.split('&')
-            query = dict([tuple(i) for i in [x.split('=') for x in query]])
-            # print query
+            try:
+                query = dict([tuple(i) for i in [x.split('=') for x in query]])
+                # print query
+            except:
+                return web.badrequest()
             chl = query.get('chl', '')
             chs = query.get('chs', '300x300')
             chl = chl.replace('+', '%20') # 解决空格变加号，替换空格为 '%20'
@@ -106,7 +112,7 @@ class QR(object):
             chl = chardete.dete(chl)
             # print repr(chl)
             # if charest is None:
-                # raise web.seeother('/')
+                # return web.seeother('/')
         else:
             charest = dete['encoding']
             chl = chl.decode(charest).encode('utf8')
@@ -137,7 +143,7 @@ class QR(object):
         try:
             size = tuple([int(i) for i in chs.split('x')])
         except:
-            return web.seeother('/')
+            return web.badrequest()
         MIME, data = self.show_image(im, size)
         web.header('Content-Type', MIME)
         return data
