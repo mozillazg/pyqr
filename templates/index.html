@@ -11,49 +11,89 @@ $def with(api_url)
         <meta name="description" content="Online QR Code Generator" />
         <link href="/static/favicon.ico" rel="shortcut icon" type="image/x-icon" />
         <style>
-            body, select, button {
+            body, ul, select, button {
               font-family: Arial Unicode MS,Arial,sans-serif;
               font-size: small;
             }
-            #main {
+            /*#main {
                 margin: 4em auto;
                 max-width: 35em;
                 min-width: 13em;
+            }*/
+            #header {
+              background-color: #DDE3E9;
+              border-bottom: 1px solid #F2F7FC;
+              text-align: center;
             }
+            
             #header span {
               color: #5E6B75;
               font-weight: normal;
             }
             #header h1 {
+              border-bottom: 1px solid #C8D0D9;
               font-size: 15px;
+              font-weight: bold;
+              margin: 0;
+              padding: 12px;
             }
+
             h2 {
                 font-size: 14px;
             }
             #form {
-                margin: 1em;
+                /*margin: 1em;*/
+                font-size: 11px;
+                margin: 0 auto;
+                padding: 12px;
+                width: 600px;
+                /*width: 800px;*/
+
+            }
+            #form .first {
+                color: #5E6B75;
+                font-size: 11px;
+                font-weight: bold;
+                padding: 4px 0;
+                text-align: right;
+                vertical-align: top;
+                width: 100px;
+                float: left;
+                margin: 0em 0.1em;
+
+            }
+            #form .second {
+                color: #5E6B75;
+                font-size: 11px;
+                font-weight: bold;
+                width: 270px;
+                float: left;
+                padding: 0.2em;
+                margin: 0em 0.1em;
             }
             .textarea {
                 -moz-border-radius: 5px;
                 border-radius: 5px;
-                margin: 0em 0em 1em 0em;
+                margin: 0em 0em 0.1em 0em;
             }
             .textarea {
-              -moz-border-bottom-colors: none;
-              -moz-border-image: none;
-              -moz-border-left-colors: none;
-              -moz-border-right-colors: none;
-              -moz-border-top-colors: none;
-              border-style: solid;
-              border-width: 1px;
-              font-family: Arial Unicode MS,Arial,sans-serif;
-              font-size: 100%;
-              padding: 4px;
+                -moz-border-bottom-colors: none;
+                -moz-border-image: none;
+                -moz-border-left-colors: none;
+                -moz-border-right-colors: none;
+                -moz-border-top-colors: none;
+                border-color: #666666 #CCCCCC #CCCCCC;
+                border-right: 1px solid #CCCCCC;
+                border-style: solid;
+                border-width: 1px;
+                font-family: Arial Unicode MS,Arial,sans-serif;
+                font-size: 100%;
+                padding: 4px;
             }
             .textarea {
               color: #000000;
               font-weight: normal;
-              width: 300px;
+              width: 280px;
             }
 
             .required {
@@ -63,6 +103,15 @@ $def with(api_url)
             .fixed {
                     clear: both;
                 }
+            ul.none {
+                list-style-type: none;
+                padding-left: 0px;
+                margin-top: 0.2em;
+               /* display: table-row;*/
+            }/*
+            li.first, li.second {
+                display: table-cell;
+            }*/
             .button {
               -moz-border-bottom-colors: none;
               -moz-border-image: none;
@@ -84,6 +133,7 @@ $def with(api_url)
               padding-top: 12px;
               text-align: center;
               width: 100%;
+              color: #5E6B75;
             }
             #footer a {
               color: #5E6B75;
@@ -99,19 +149,55 @@ $def with(api_url)
                 <span>by mozillazg</span>
             </h1>
         </div>
-        <h2>API example:</h2>
-        <a href='$api_url', title='api example'>$api_url</a>
+        <!--<h2>API example:</h2>-->
+        <!--<a href='$api_url', title='api example'>$api_url</a>-->
         <div id="form">
             <form method="get" action="$site/qr">
-                <input type="hidden" name="chs" value="300x300" />
-                <textarea class="textarea required" name="chl" required="true" autofocus="true" rows="5" value=""></textarea>
+                <ul class="none">
+                    <li class="first">
+                        <label for="text">Text content</label>
+                    </li>
+                    <li class="second">
+                        <textarea id="text" class="textarea required" name="chl" required="true" autofocus="true" rows="5" value=""></textarea>
+                    </li>
+                </ul>
                 <div class="fixed"></div>
-                <button class="button" type="submit" >Generate →</button>
+                <ul class="none">
+                    <li class="first">Barcode size</li>
+                    <li class="second">
+                        <select name="chs" class="listbox">
+                            <option value="120x120">Small</option>
+                            <option value="230x230" selected="selected">Medium</option>
+                            <option value="350x350">Large</option>
+                        </select>
+                    </li>
+                </ul>
+                <div class="fixed"></div>
+                <ul class="none">
+                    <li class="first">Error correction</li>
+                    <li class="second">
+                        <select name="chld" class="listbox">
+                            <option value="L">L</option>
+                            <option value="M" selected="selected">M</option>
+                            <option value="Q">Q</option>
+                            <option value="H">H</option>
+                        </select>
+                    </li>
+                </ul>
+                <div class="fixed"></div>
+                <ul class="none">
+                    <li class="first"></li>
+                    <li class="second">
+                        <button class="button" type="submit" >Generate →</button>
+                    </li>
+                </ul>
             </form>
         </div>
 
+        <div class="fixed"></div>
         <div id="footer">
-          <a href="https://github.com/mozillazg/pyqr">Source Code</a>
+            <a href="$site/qr/api" title="api">API</a> | 
+            <a href="https://github.com/mozillazg/pyqr" title="souce code">Source Code</a>
         </div>
     </div>
     </body>
