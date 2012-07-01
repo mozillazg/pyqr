@@ -24,7 +24,7 @@ if 'SERVER_SOFTWARE' in os.environ:
     site = 'http://%s.sinaapp.com' % (os.environ.get('APP_NAME'))
 else:
     # Local
-    site = 'http://127.0.0.1:8080'
+    site = 'http://127.0.0.1:8080' # TODO 获取自定义的端口
 
 app_root = os.path.dirname(__file__)
 templates_root = os.path.join(app_root, 'templates')
@@ -76,8 +76,10 @@ class QR(object):
         new_im_name.close()
         return (MIME, new_im_data)
 
+    # TODO 提供更多选项
+
     def GET(self):
-        # TODO 解决 IE 浏览器下地址栏输入中文出现编码错误的文
+        # TODO 解决 IE 浏览器下地址栏输入中文出现编码错误的情况
         # TODO google 是直接将在地址栏输入的参数重定向为 '' , 不用那么复杂
         # import os
         # print os.environ('HTTP_REFERRER')
@@ -125,7 +127,11 @@ class QR(object):
         try:
             size = tuple([int(i) for i in chs.split('x')])
         except:
-            return web.seeother('/')
+            return web.badrequest()
+        # TODO 300x0, -100x-100
+        else:
+            if size[0] * size[1] == 0 or size[0] < 0 or size[1] < 0:
+                return web.badrequest()
         MIME, data = self.show_image(im, size)
         web.header('Content-Type', MIME)
         return data
