@@ -3,6 +3,7 @@
 
 import os
 import StringIO
+import string
 import web
 import qrcode
 from mime import ImageMIME
@@ -41,7 +42,7 @@ class Index(object):
 class QR(object):
     """处理传来的数据并显示 QR Code 二维码图片
     """
-    def show_image(self, im, size):
+    def show_image(self, chl, chld, chs):
         """返回图片 MIME 及 内容，用于显示图片
         """
         # Try to import PIL in either of the two ways it can be installed.
@@ -49,6 +50,46 @@ class QR(object):
             from PIL import Image, ImageDraw
         except ImportError:
             import Image, ImageDraw
+        if len(chl) > 700:
+            # return web.seeother('/')
+            chl = ''
+        chld = string.upper(chld) # 转换为大小字母
+        if chld == '':
+            chld = 'M'
+        elif chld not in ['L', 'M', 'Q', 'H']:
+            raise web.badrequest()
+        try:
+            chs = string.lower(chs) # 转换为小写字母
+            size = tuple([int(i) for i in chs.split('x')])
+        except:
+            raise web.badrequest()
+        else:
+            if (size[0] * size[1] == 0 or size[0] < 0 or size[1] < 0 or (
+                    size[0] < 21) or size[0] < 21) or (# 处理负数，零，小于最小值（21x21）的情况
+                    (size[0] > 500) or size[1] > 500): # 限制图片大小，防止图片太大导致系统死机
+                raise web.badrequest()
+        if chld == 'L':
+            self.error_correction = qrcode.constants.ERROR_CORRECT_L
+        elif chld == 'M':
+            self.error_correction = qrcode.constants.ERROR_CORRECT_M
+        elif chld == 'Q':
+            self.error_correction = qrcode.constants.ERROR_CORRECT_Q
+        elif chld == 'H':
+            self.error_correction = qrcode.constants.ERROR_CORRECT_H
+        self.version = 4
+        self.border = 4
+        self.size = size[0] if size[0] <= size[1] else size[1]
+        # 根据 qrcode 源码及 size 参数求 box_size
+        self.box_size = self.size/((self.version * 4 + 17) + self.border * 2)
+        qr = qrcode.QRCode(
+                version=self.version,
+                error_correction=self.error_correction,
+                box_size=self.box_size,
+                border=self.border,
+            )
+        qr.add_data(chl)
+        qr.make(fit=True)
+        im = qr.make_image()
         # im.show()
         img_name = StringIO.StringIO()
         im.save(img_name, 'png')
@@ -60,14 +101,17 @@ class QR(object):
         # print size
         rx, ry = size
         # TODO 缩放太小不能识别则显示空白，判断图片清晰度
-        if rx <= ry and rx <= x:
-            x = y = rx
-        elif ry <= rx and ry <= y:
-            x = y = ry
+        # if rx <= ry and rx <= x:
+            # x = y = rx
+        # elif ry <= rx and ry <= y:
+            # x = y = ry
+        # print x, y, rx, ry
         # 缩放二维码图片
-        im = im.resize((x, y), Image.ANTIALIAS)
+        # im = im.resize((x, y), Image.ANTIALIAS)
         new_im = Image.new("1", (rx, ry), "white")
-        new_im.paste(im, ((rx-x)/2, (ry-y)/2, rx-(rx-x)/2, ry-(ry-y)/2))
+        paste_size = ((rx-x)/2.00, (ry-y)/2.00, rx-(rx-x)/2.00, ry-(ry-y)/2.00)
+        # print paste_size
+        new_im.paste(im, paste_size)
         img_name.close()
         new_im_name = StringIO.StringIO()
         new_im.save(new_im_name, 'png')
@@ -76,18 +120,12 @@ class QR(object):
         new_im_name.close()
         return (MIME, new_im_data)
 
-    # TODO 提供更多选项
-
     def GET(self):
         # TODO 解决 IE 浏览器下地址栏输入中文出现编码错误的情况
         # TODO google 是直接将在地址栏输入的参数重定向为 '' , 不用那么复杂
-        # import os
-        # print os.environ('HTTP_REFERRER')
-        # response = app.request("/qr")
-        # print response.status
         # query = web.ctx.query # 它及 web.input() 将字符都变成了类似 u'%B3%B5' 导致不能猜测编码 
         query = web.ctx.env['QUERY_STRING'] # 解决非 IE 浏览器下地址栏输入中文出现的编码问题
-        print query
+        # print query
         if query == '':
             return web.badrequest()
         else:
@@ -98,8 +136,9 @@ class QR(object):
             except:
                 return web.badrequest()
             chl = query.get('chl', '')
-            chs = query.get('chs', '300x300')
             chl = chl.replace('+', '%20') # 解决空格变加号，替换空格为 '%20'
+            chs = query.get('chs', '300x300')
+            chld = query.get('chld', 'M')
         # print repr(chl)
         import urllib2
         chl = urllib2.unquote(chl)
@@ -120,37 +159,20 @@ class QR(object):
             chl = chl.decode(charest).encode('utf8')
             # print repr(chl)
         # TODO 如果编码不是 utf8，编码(quote())后重定向到 UTF8 编码后的链接
-        if len(chl) > 700:
-            # return web.seeother('/')
-            chl = ''
-        im = qrcode.make(chl)
-        try:
-            size = tuple([int(i) for i in chs.split('x')])
-        except:
-            return web.badrequest()
-        # TODO 300x0, -100x-100
-        else:
-            if size[0] * size[1] == 0 or size[0] < 0 or size[1] < 0:
-                return web.badrequest()
-        MIME, data = self.show_image(im, size)
+        MIME, data = self.show_image(chl, chld, chs)
         web.header('Content-Type', MIME)
         return data
 
     def POST(self):
         """处理 POST 数据
         """
-        query = web.input(chl='', chs='300x300')
+        query = web.input(chl='', chld='M', chs='300x300')
         # 因为 web.input() 的返回的是 unicode 编码的数据，
         # 所以将数据按 utf8 编码以便用来生成二维码
         chl = query.chl.encode('utf8')
         chs = query.chs
-        im = qrcode.make(chl)
-        # print '%r, %r' % (chl, chs)
-        try:
-            size = tuple([int(i) for i in chs.split('x')])
-        except:
-            return web.badrequest()
-        MIME, data = self.show_image(im, size)
+        chld = query.chld
+        MIME, data = self.show_image(chl, chld, chs)
         web.header('Content-Type', MIME)
         return data
 
