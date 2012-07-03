@@ -50,14 +50,25 @@ class QR(object):
             from PIL import Image, ImageDraw
         except ImportError:
             import Image, ImageDraw
-        if len(chl) > 700:
-            # return web.seeother('/')
+        if len(chl) > 700: # 限制字符数
             chl = ''
         chld = string.upper(chld) # 转换为大小字母
         if chld == '':
-            chld = 'M'
-        elif chld not in ['L', 'M', 'Q', 'H']:
-            raise web.badrequest()
+            chld = 'L|4'
+        else:
+            chld = [i for i in chld.split('|')] # chld 是非必需参数
+            if len(chld) == 2:
+                try:
+                    self.version = int(chld[1])
+                except:
+                    # raise web.badrequest()
+                    self.version = 4
+            elif len(chld) == 1:
+                self.version = 4
+        if (chld[0] not in ['L', 'M', 'Q', 'H']) or self.version < 1 or self.version > 40:
+            # raise web.badrequest()
+            chld[0] = 'L'
+            self.version = 4
         try:
             chs = string.lower(chs) # 转换为小写字母
             size = tuple([int(i) for i in chs.split('x')])
@@ -68,15 +79,15 @@ class QR(object):
                     size[0] < 21) or size[0] < 21) or (# 处理负数，零，小于最小值（21x21）的情况
                     (size[0] > 500) or size[1] > 500): # 限制图片大小，防止图片太大导致系统死机
                 raise web.badrequest()
-        if chld == 'L':
+        if chld[0] == 'L':
             self.error_correction = qrcode.constants.ERROR_CORRECT_L
-        elif chld == 'M':
+        elif chld[0] == 'M':
             self.error_correction = qrcode.constants.ERROR_CORRECT_M
-        elif chld == 'Q':
+        elif chld[0] == 'Q':
             self.error_correction = qrcode.constants.ERROR_CORRECT_Q
-        elif chld == 'H':
+        elif chld[0] == 'H':
             self.error_correction = qrcode.constants.ERROR_CORRECT_H
-        self.version = 4
+        # self.version = 4
         self.border = 4
         self.size = size[0] if size[0] <= size[1] else size[1]
         # 根据 qrcode 源码及 size 参数求 box_size
@@ -131,14 +142,21 @@ class QR(object):
         else:
             query = query.split('&')
             try:
-                query = dict([tuple(i) for i in [x.split('=') for x in query]])
+                # query = dict([tuple(i) for i in ])
+                values = [x.split('=') for x in query] # 分割参数
+                query = {}
+                for i in values:
+                    if len(i) == 1 and i[0] == 'chld': # chld 是非必需参数
+                        query.setdefault(i[0], 'L|4')
+                    elif len(i) == 2 and i[0] in ['chl', 'chs', 'chld']:
+                        query.setdefault(i[0], i[1])
                 # print query
             except:
                 return web.badrequest()
             chl = query.get('chl', '')
             chl = chl.replace('+', '%20') # 解决空格变加号，替换空格为 '%20'
             chs = query.get('chs', '300x300')
-            chld = query.get('chld', 'M')
+            chld = query.get('chld', 'L|4')
         # print repr(chl)
         import urllib2
         chl = urllib2.unquote(chl)
@@ -166,7 +184,7 @@ class QR(object):
     def POST(self):
         """处理 POST 数据
         """
-        query = web.input(chl='', chld='M', chs='300x300')
+        query = web.input(chl='', chld='L|4', chs='300x300')
         # 因为 web.input() 的返回的是 unicode 编码的数据，
         # 所以将数据按 utf8 编码以便用来生成二维码
         chl = query.chl.encode('utf8')
