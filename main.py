@@ -74,7 +74,7 @@ class QR(object):
             raise web.badrequest()
         else:
             if (size[0] * size[1] == 0 or size[0] < 0 or size[1] < 0 or (
-                    size[0] < 21) or size[0] < 21) or (# 处理负数，零，小于最小值（21x21）的情况
+                    size[0] < 21) or size[1] < 21) or (# 处理负数，零，小于最小值（21x21）的情况
                     (size[0] > 500) or size[1] > 500): # 限制图片大小，防止图片太大导致系统死机
                 raise web.badrequest()
         if chld[0] == 'L':
@@ -111,7 +111,7 @@ class QR(object):
         rx, ry = size
         # TODO 缩放太小不能识别则显示空白，判断图片清晰度
         new_im = Image.new("1", (rx, ry), "white")
-        paste_size = ((rx-x)/2.00, (ry-y)/2.00, rx-(rx-x)/2.00, ry-(ry-y)/2.00)
+        paste_size = ((rx-x)/2, (ry-y)/2, (rx-x)/2 + x, (ry-y)/2 + y)
         # print paste_size
         new_im.paste(im, paste_size)
         img_name.close()
