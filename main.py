@@ -36,8 +36,7 @@ web.template.Template.globals['site'] = site
 
 class Index(object):
     def GET(self):
-        api_url = site + '/qr?chs=300x300&chl=http://zh.wikipedia.org/wiki/QR%E7%A2%BC'
-        return render.index(api_url)
+        return render.index()
 
 class QR(object):
     """处理传来的数据并显示 QR Code 二维码图片
@@ -55,16 +54,15 @@ class QR(object):
         chld = string.upper(chld) # 转换为大小字母
         if chld == '':
             chld = 'L|4'
-        else:
-            chld = [i for i in chld.split('|')] # chld 是非必需参数
-            if len(chld) == 2:
-                try:
-                    self.version = int(chld[1])
-                except:
-                    # raise web.badrequest()
-                    self.version = 4
-            elif len(chld) == 1:
+        chld = chld.split('|') # chld 是非必需参数
+        if len(chld) == 2:
+            try:
+                self.version = int(chld[1])
+            except:
+                # raise web.badrequest()
                 self.version = 4
+        elif len(chld) == 1:
+            self.version = 4
         if (chld[0] not in ['L', 'M', 'Q', 'H']) or self.version < 1 or self.version > 40:
             # raise web.badrequest()
             chld[0] = 'L'
@@ -112,13 +110,6 @@ class QR(object):
         # print size
         rx, ry = size
         # TODO 缩放太小不能识别则显示空白，判断图片清晰度
-        # if rx <= ry and rx <= x:
-            # x = y = rx
-        # elif ry <= rx and ry <= y:
-            # x = y = ry
-        # print x, y, rx, ry
-        # 缩放二维码图片
-        # im = im.resize((x, y), Image.ANTIALIAS)
         new_im = Image.new("1", (rx, ry), "white")
         paste_size = ((rx-x)/2.00, (ry-y)/2.00, rx-(rx-x)/2.00, ry-(ry-y)/2.00)
         # print paste_size
@@ -160,22 +151,10 @@ class QR(object):
         # print repr(chl)
         import urllib2
         chl = urllib2.unquote(chl)
-        # print repr(chl)
-        import chardet
-        dete = chardet.detect(chl)
-        # print dete
-        # TODO chardete.dete() 返回字典 {'encoding': '', 'utf8': ''}
-        if dete['confidence'] < 0.99:
-            import chardete
-            # print repr(chl)
-            chl = chardete.dete(chl)
-            # print repr(chl)
-            # if charest is None:
-                # return web.seeother('/')
-        else:
-            charest = dete['encoding']
-            chl = chl.decode(charest).encode('utf8')
-            # print repr(chl)
+        print repr(chl)
+        import charset
+        chl = charset.utf8(chl) # 将字符串解码然后按 utf8 编码
+        print repr(chl)
         # TODO 如果编码不是 utf8，编码(quote())后重定向到 UTF8 编码后的链接
         MIME, data = self.show_image(chl, chld, chs)
         web.header('Content-Type', MIME)

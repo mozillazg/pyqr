@@ -4,9 +4,10 @@
 """简单猜测字符编码并返回经过utf8编码的字符
 """
 
-def dete(stri):
-    charests = ('utf8', 'gbk', 'big5', 'gb2312',
-                 'jp', 'euc_kr', 'utf16', 'utf32')
+def utf8(stri):
+    charests = ('utf8', 'gbk', 'gb2312', 'big5', 'ascii',
+                'shift_jis', 'euc_jp', 'euc_kr', 'latin1', 'latin2', 'latin9', 'latin10', 'koi8_r', 'cyrillic', 'utf16', 'utf32'
+                 )
     str_ = stri
     for i in charests:
         try:
