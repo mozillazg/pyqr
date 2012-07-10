@@ -151,10 +151,10 @@ class QR(object):
         # print repr(chl)
         import urllib2
         chl = urllib2.unquote(chl)
-        print repr(chl)
+        # print repr(chl)
         import charset
-        chl = charset.utf8(chl) # 将字符串解码然后按 utf8 编码
-        print repr(chl)
+        chl = charset.encode(chl) # 将字符串解码然后按 utf8 编码
+        # print repr(chl)
         # TODO 如果编码不是 utf8，编码(quote())后重定向到 UTF8 编码后的链接
         MIME, data = self.show_image(chl, chld, chs)
         web.header('Content-Type', MIME)
