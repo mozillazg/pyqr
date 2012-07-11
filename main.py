@@ -49,33 +49,35 @@ class QR(object):
             from PIL import Image, ImageDraw
         except ImportError:
             import Image, ImageDraw
-        if len(chl) > 700: # 限制字符数
-            chl = ''
+        if len(chl) > 2953: # 最大容量
+            chl = chl[:2952]
+            # chl = ''
         chld = string.upper(chld) # 转换为大小字母
         if chld == '':
             chld = 'L|4'
         chld = chld.split('|') # chld 是非必需参数
         if len(chld) == 2:
             try:
-                self.version = int(chld[1])
+                self.border = int(chld[1])
             except:
                 # raise web.badrequest()
                 self.version = 4
         elif len(chld) == 1:
-            self.version = 4
-        if (chld[0] not in ['L', 'M', 'Q', 'H']) or self.version < 1 or self.version > 40:
-            # raise web.badrequest()
+            self.border = 4
+        if chld[0] not in ['L', 'M', 'Q', 'H']:
             chld[0] = 'L'
-            self.version = 4
+        if self.border < 0:
+            # raise web.badrequest()
+            self.border = 4
         try:
             chs = string.lower(chs) # 转换为小写字母
             size = tuple([int(i) for i in chs.split('x')])
         except:
             raise web.badrequest()
         else:
-            if (size[0] * size[1] == 0 or size[0] < 0 or size[1] < 0 or (
-                    size[0] < 21) or size[1] < 21) or (# 处理负数，零，小于最小值（21x21）的情况
-                    (size[0] > 500) or size[1] > 500): # 限制图片大小，防止图片太大导致系统死机
+            if (size[0] * size[1] == 0 or size[0] < 0 or size[1] < 0 or ( # 处理负数及零的情况
+                    # size[0] < 21) or size[1] < 21 or (
+                    size[0] > 500) or size[1] > 500): # 限制图片大小，防止图片太小太大导致系统死机
                 raise web.badrequest()
         if chld[0] == 'L':
             self.error_correction = qrcode.constants.ERROR_CORRECT_L
@@ -86,19 +88,29 @@ class QR(object):
         elif chld[0] == 'H':
             self.error_correction = qrcode.constants.ERROR_CORRECT_H
         # self.version = 4
-        self.border = 4
+        self.box_size = 10
         self.size = size[0] if size[0] <= size[1] else size[1]
-        # 根据 qrcode 源码及 size 参数求 box_size
+        versions = (7, 14, 24, 34, 44, 58, 64, 84, 98, 119, 137, 155,
+                  177, 194, 220, 250, 280, 310, 338, 382, 403, 439,
+                  461, 511, 535, 593, 625, 658, 698, 742, 790, 842,
+                  898, 958, 983, 1051, 1093, 1139, 1219, 1273
+        ) # 1~40 版本 H 纠错级别下的最大容量
+        print self.version
+        print self.size, self.border
+        # 根据 qrcode 源码、size 及 version 参数求 box_size
         self.box_size = self.size/((self.version * 4 + 17) + self.border * 2)
-        qr = qrcode.QRCode(
+        if self.version < 1 or self.version > 40:
+            im = Image.new("1", (1, 1), "white")
+        else:
+            qr = qrcode.QRCode(
                 version=self.version,
                 error_correction=self.error_correction,
                 box_size=self.box_size,
                 border=self.border,
             )
-        qr.add_data(chl)
-        qr.make(fit=True)
-        im = qr.make_image()
+            qr.add_data(chl)
+            qr.make(fit=True)
+            im = qr.make_image()
         # im.show()
         img_name = StringIO.StringIO()
         im.save(img_name, 'png')
@@ -144,7 +156,7 @@ class QR(object):
                 # print query
             except:
                 return web.badrequest()
-            chl = query.get('chl', '')
+            chl = query.get('chl', '') # TODO 必需参数不设默认值直接抛出400 error
             chl = chl.replace('+', '%20') # 解决空格变加号，替换空格为 '%20'
             chs = query.get('chs', '300x300')
             chld = query.get('chld', 'L|4')
