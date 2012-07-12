@@ -54,7 +54,7 @@ class QR(object):
             # chl = ''
         chld = string.upper(chld) # 转换为大小字母
         if chld == '':
-            chld = 'L|4'
+            chld = 'M|4'
         chld = chld.split('|') # chld 是非必需参数
         if len(chld) == 2:
             try:
@@ -65,7 +65,7 @@ class QR(object):
         elif len(chld) == 1:
             self.border = 4
         if chld[0] not in ['L', 'M', 'Q', 'H']:
-            chld[0] = 'L'
+            chld[0] = 'M'
         if self.border < 0:
             # raise web.badrequest()
             self.border = 4
@@ -184,7 +184,7 @@ class QR(object):
                 query = {}
                 for i in values:
                     if len(i) == 1 and i[0] == 'chld': # chld 是非必需参数
-                        query.setdefault(i[0], 'L|4')
+                        query.setdefault(i[0], 'M|4')
                     elif len(i) == 2 and i[0] in ['chl', 'chs', 'chld']:
                         query.setdefault(i[0], i[1])
                 # print query
@@ -193,7 +193,7 @@ class QR(object):
             chl = query.get('chl', '') # TODO 必需参数不设默认值直接抛出400 error
             chl = chl.replace('+', '%20') # 解决空格变加号，替换空格为 '%20'
             chs = query.get('chs', '300x300')
-            chld = query.get('chld', 'L|4')
+            chld = query.get('chld', 'M|4')
         # print repr(chl)
         import urllib2
         chl = urllib2.unquote(chl)
@@ -209,7 +209,7 @@ class QR(object):
     def POST(self):
         """处理 POST 数据
         """
-        query = web.input(chl='', chld='L|4', chs='300x300')
+        query = web.input(chl='', chld='M|4', chs='300x300')
         # 因为 web.input() 的返回的是 unicode 编码的数据，
         # 所以将数据按 utf8 编码以便用来生成二维码
         chl = query.chl.encode('utf8')
