@@ -79,27 +79,61 @@ class QR(object):
                     # size[0] < 21) or size[1] < 21 or (
                     size[0] > 500) or size[1] > 500): # 限制图片大小，防止图片太小太大导致系统死机
                 raise web.badrequest()
-        if chld[0] == 'L':
-            self.error_correction = qrcode.constants.ERROR_CORRECT_L
-        elif chld[0] == 'M':
-            self.error_correction = qrcode.constants.ERROR_CORRECT_M
-        elif chld[0] == 'Q':
-            self.error_correction = qrcode.constants.ERROR_CORRECT_Q
-        elif chld[0] == 'H':
-            self.error_correction = qrcode.constants.ERROR_CORRECT_H
         # self.version = 4
         self.box_size = 10
         self.size = size[0] if size[0] <= size[1] else size[1]
-        versions = (7, 14, 24, 34, 44, 58, 64, 84, 98, 119, 137, 155,
-                  177, 194, 220, 250, 280, 310, 338, 382, 403, 439,
-                  461, 511, 535, 593, 625, 658, 698, 742, 790, 842,
-                  898, 958, 983, 1051, 1093, 1139, 1219, 1273
-        ) # 1~40 版本 H 纠错级别下的最大容量
+        # L,M,Q,H 纠错级别下 1~40 版本的最大容量(Binary)
+        l_max = [17, 32, 53, 78, 106, 134, 154, 192, 230, 271, 321,
+                367, 425, 458, 520, 586, 644, 718, 792, 858, 929,
+                1003, 1091, 1171, 1273, 1367, 1465, 1528, 1628,
+                1732, 1840, 1952, 2068, 2188, 2303, 2431, 2563,
+                2699, 2809, 2953]
+        m_max = [14, 26, 42, 62, 84, 106, 122, 152, 180, 213, 251,
+                287, 331, 362, 412, 450, 504, 560, 624, 666, 711,
+                779, 857, 911, 997, 1059, 1125, 1190, 1264, 1370,
+                1452, 1538, 1628, 1722, 1809, 1911, 1989, 2099,
+                2213, 2331]
+        q_max = [11, 20, 32, 46, 60, 74, 86, 108, 130, 151, 177,
+                203, 241, 258, 292, 322, 364, 394, 442, 482, 509,
+                565, 611, 661, 715, 751, 805, 868, 908, 982, 1030,
+                1112, 1168, 1228, 1283, 1351, 1423, 1499, 1579, 1663]
+        h_max = [7, 14, 24, 34, 44, 58, 64, 84, 98, 119, 137, 155,
+                177, 194, 220, 250, 280, 310, 338, 382, 403, 439,
+                461, 511, 535, 593, 625, 658, 698, 742, 790, 842,
+                898, 958, 983, 1051, 1093, 1139, 1219, 1273]
+        self.level = chld[0] # 纠错级别
+        # 根据纠错级别及字符数选定版本。
+        if self.level == 'L':
+            for i in l_max:
+                if len(chl) < i:
+                    self.version = l_max.index(i) + 1
+                    break
+            self.error_correction = qrcode.constants.ERROR_CORRECT_L
+        elif self.level == 'M':
+            for i in m_max:
+                if len(chl) < i:
+                    self.version = m_max.index(i) + 1
+                    break
+            self.error_correction = qrcode.constants.ERROR_CORRECT_M
+        elif self.level == 'Q':
+            for i in q_max:
+                if len(chl) < i:
+                    self.version = q_max.index(i) + 1
+                    break
+            self.error_correction = qrcode.constants.ERROR_CORRECT_Q
+        elif self.level == 'H':
+            for i in h_max:
+                if len(chl) < i:
+                    self.version = h_max.index(i) + 1
+                    break
+            self.error_correction = qrcode.constants.ERROR_CORRECT_H
+        print len(chl)
         print self.version
         print self.size, self.border
         # 根据 qrcode 源码、size 及 version 参数求 box_size
         self.box_size = self.size/((self.version * 4 + 17) + self.border * 2)
-        if self.version < 1 or self.version > 40:
+        print self.box_size
+        if self.box_size == 0:
             im = Image.new("1", (1, 1), "white")
         else:
             qr = qrcode.QRCode(
