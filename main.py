@@ -191,7 +191,6 @@ class QR(object):
         else:
             query = query.split('&')
             try:
-                # query = dict([tuple(i) for i in ])
                 values = [x.split('=') for x in query] # 分割参数
                 query = {}
                 for i in values:
@@ -202,9 +201,11 @@ class QR(object):
                 # print query
             except:
                 return web.badrequest()
-            chl = query.get('chl', '') # TODO 必需参数不设默认值直接抛出400 error
+            chl = query.get('chl')
             chl = chl.replace('+', '%20') # 解决空格变加号，替换空格为 '%20'
-            chs = query.get('chs', '300x300')
+            chs = query.get('chs')
+            if chl is None or chs is None:
+                return web.badrequest()
             chld = query.get('chld', 'M|4')
         # print repr(chl)
         import urllib2
@@ -212,6 +213,8 @@ class QR(object):
         # print repr(chl)
         import charset
         chl = charset.encode(chl) # 将字符串解码然后按 utf8 编码
+        if chl is None:
+            return web.badrequest()
         # print repr(chl)
         # TODO 如果编码不是 utf8，编码(quote())后重定向到 UTF8 编码后的链接
         args = self.handle_parameter(chl, chld, chs)
@@ -225,18 +228,19 @@ class QR(object):
     def POST(self):
         """处理 POST 数据
         """
-        query = web.input(chl='', chld='M|4', chs='300x300')
+        query = web.input(chs='300x300')
         # 因为 web.input() 的返回的是 unicode 编码的数据，
         # 所以将数据按 utf8 编码以便用来生成二维码
         chl = query.chl.encode('utf8')
         chs = query.chs
+        if chl is None or chs is None:
+            return web.badrequest()
         chld = query.chld
         args = self.handle_parameter(chl, chld, chs)
         MIME, data = self.show_image(args['version'],
                                     args['error_correction'],
                                     args['box_size'], args['border'],
                                     args['content'], args['size'])
-        MIME, data = self.show_image()
         web.header('Content-Type', MIME)
         return data
 
