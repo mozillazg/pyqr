@@ -25,7 +25,7 @@ if 'SERVER_SOFTWARE' in os.environ:
     site = 'http://%s.sinaapp.com' % (os.environ.get('APP_NAME'))
 else:
     # Local
-    site = 'http://127.0.0.1:8080' # TODO è·å–è‡ªå®šä¹‰çš„ç«¯å£
+    site = 'http://127.0.0.1:8080' # TODO »ñÈ¡×Ô¶¨ÒåµÄ¶Ë¿Ú
 
 app_root = os.path.dirname(__file__)
 templates_root = os.path.join(app_root, 'templates')
@@ -39,23 +39,18 @@ class Index(object):
         return render.index()
 
 class QR(object):
-    """å¤„ç†ä¼ æ¥çš„æ•°æ®å¹¶æ˜¾ç¤º QR Code äºŒç»´ç å›¾ç‰‡
+    """´¦Àí´«À´µÄÊı¾İ²¢ÏÔÊ¾ QR Code ¶şÎ¬ÂëÍ¼Æ¬
     """
-    def show_image(self, chl, chld, chs):
-        """è¿”å›å›¾ç‰‡ MIME åŠ å†…å®¹ï¼Œç”¨äºæ˜¾ç¤ºå›¾ç‰‡
+    def handle_parameter(self, chl, chld, chs):
+        """´¦Àí±íµ¥Ìá½»µÄ±äÁ¿
         """
-        # Try to import PIL in either of the two ways it can be installed.
-        try:
-            from PIL import Image, ImageDraw
-        except ImportError:
-            import Image, ImageDraw
-        if len(chl) > 2953: # æœ€å¤§å®¹é‡
+        if len(chl) > 2953: # ×î´óÈİÁ¿
             chl = chl[:2952]
             # chl = ''
-        chld = string.upper(chld) # è½¬æ¢ä¸ºå¤§å°å­—æ¯
+        chld = string.upper(chld) # ×ª»»Îª´óĞ¡×ÖÄ¸
         if chld == '':
             chld = 'M|4'
-        chld = chld.split('|') # chld æ˜¯éå¿…éœ€å‚æ•°
+        chld = chld.split('|') # chld ÊÇ·Ç±ØĞè²ÎÊı
         if len(chld) == 2:
             try:
                 border = int(chld[1])
@@ -70,18 +65,18 @@ class QR(object):
             # raise web.badrequest()
             border = 4
         try:
-            chs = string.lower(chs) # è½¬æ¢ä¸ºå°å†™å­—æ¯
+            chs = string.lower(chs) # ×ª»»ÎªĞ¡Ğ´×ÖÄ¸
             size = tuple([int(i) for i in chs.split('x')])
         except:
             raise web.badrequest()
         else:
-            if (size[0] * size[1] == 0 or size[0] < 0 or size[1] < 0 or ( # å¤„ç†è´Ÿæ•°åŠé›¶çš„æƒ…å†µ
+            if (size[0] * size[1] == 0 or size[0] < 0 or size[1] < 0 or ( # ´¦Àí¸ºÊı¼°ÁãµÄÇé¿ö
                     # size[0] < 21) or size[1] < 21 or (
-                    size[0] > 500) or size[1] > 500): # é™åˆ¶å›¾ç‰‡å¤§å°ï¼Œé˜²æ­¢å›¾ç‰‡å¤ªå¤§å¯¼è‡´ç³»ç»Ÿæ­»æœº
+                    size[0] > 800) or size[1] > 800): # ÏŞÖÆÍ¼Æ¬´óĞ¡£¬·ÀÖ¹Í¼Æ¬Ì«´óµ¼ÖÂÏµÍ³ËÀ»ú
                 raise web.badrequest()
         box_size = 10
-        size = size[0] if size[0] <= size[1] else size[1]
-        # L,M,Q,H çº é”™çº§åˆ«ä¸‹ 1~40 ç‰ˆæœ¬çš„æœ€å¤§å®¹é‡(Binary)
+        square_size = size[0] if size[0] <= size[1] else size[1]
+        # L,M,Q,H ¾À´í¼¶±ğÏÂ 1~40 °æ±¾µÄ×î´óÈİÁ¿(Binary)
         l_max = [17, 32, 53, 78, 106, 134, 154, 192, 230, 271, 321,
                 367, 425, 458, 520, 586, 644, 718, 792, 858, 929,
                 1003, 1091, 1171, 1273, 1367, 1465, 1528, 1628,
@@ -100,8 +95,8 @@ class QR(object):
                 177, 194, 220, 250, 280, 310, 338, 382, 403, 439,
                 461, 511, 535, 593, 625, 658, 698, 742, 790, 842,
                 898, 958, 983, 1051, 1093, 1139, 1219, 1273]
-        level = chld[0] # çº é”™çº§åˆ«
-        # æ ¹æ®çº é”™çº§åˆ«åŠå­—ç¬¦æ•°é€‰å®šç‰ˆæœ¬ã€‚
+        level = chld[0] # ¾À´í¼¶±ğ
+        # ¸ù¾İ¾À´í¼¶±ğ¼°×Ö·ûÊıÑ¡¶¨°æ±¾¡£
         if level == 'L':
             for i in l_max:
                 if len(chl) < i:
@@ -126,12 +121,30 @@ class QR(object):
                     version = h_max.index(i) + 1
                     break
             error_correction = qrcode.constants.ERROR_CORRECT_H
-        print len(chl)
-        print version
-        print size, border
-        # æ ¹æ® qrcode æºç ã€size åŠ version å‚æ•°æ±‚ box_size
-        box_size = size/((version * 4 + 17) + border * 2)
-        print box_size
+        # print len(chl)
+        # print version
+        # print size, border
+        # ¸ù¾İ qrcode Ô´Âë¡¢square_size ¼° version ²ÎÊıÇó box_size
+        box_size = square_size/((version * 4 + 17) + border * 2)
+        # print box_size
+        args = {'version': version,
+                'error_correction': error_correction,
+                'box_size': box_size,
+                'border': border,
+                'content': chl,
+                'size': size
+                }
+        return args
+
+    def show_image(self, version, error_correction, box_size, border,
+                    content, size):
+        """·µ»ØÍ¼Æ¬ MIME ¼° ÄÚÈİ£¬ÓÃÓÚÏÔÊ¾Í¼Æ¬
+        """
+        # Try to import PIL in either of the two ways it can be installed.
+        try:
+            from PIL import Image, ImageDraw
+        except ImportError:
+            import Image, ImageDraw
         if box_size == 0:
             im = Image.new("1", (1, 1), "white")
         else:
@@ -141,7 +154,7 @@ class QR(object):
                 box_size = box_size,
                 border = border,
             )
-            qr.add_data(chl)
+            qr.add_data(content)
             qr.make(fit=True)
             im = qr.make_image()
         # im.show()
@@ -154,7 +167,7 @@ class QR(object):
         # print im.size
         # print size
         rx, ry = size
-        # TODO ç¼©æ”¾å¤ªå°ä¸èƒ½è¯†åˆ«åˆ™æ˜¾ç¤ºç©ºç™½ï¼Œåˆ¤æ–­å›¾ç‰‡æ¸…æ™°åº¦
+        # TODO Ëõ·ÅÌ«Ğ¡²»ÄÜÊ¶±ğÔòÏÔÊ¾¿Õ°×£¬ÅĞ¶ÏÍ¼Æ¬ÇåÎú¶È
         new_im = Image.new("1", (rx, ry), "white")
         paste_size = ((rx-x)/2, (ry-y)/2, (rx-x)/2 + x, (ry-y)/2 + y)
         # print paste_size
@@ -168,10 +181,10 @@ class QR(object):
         return (MIME, new_im_data)
 
     def GET(self):
-        # TODO è§£å†³ IE æµè§ˆå™¨ä¸‹åœ°å€æ è¾“å…¥ä¸­æ–‡å‡ºç°ç¼–ç é”™è¯¯çš„æƒ…å†µ
-        # TODO google æ˜¯ç›´æ¥å°†åœ¨åœ°å€æ è¾“å…¥çš„å‚æ•°é‡å®šå‘ä¸º '' , ä¸ç”¨é‚£ä¹ˆå¤æ‚
-        # query = web.ctx.query # å®ƒåŠ web.input() å°†å­—ç¬¦éƒ½å˜æˆäº†ç±»ä¼¼ u'%B3%B5' å¯¼è‡´ä¸èƒ½çŒœæµ‹ç¼–ç  
-        query = web.ctx.env['QUERY_STRING'] # è§£å†³é IE æµè§ˆå™¨ä¸‹åœ°å€æ è¾“å…¥ä¸­æ–‡å‡ºç°çš„ç¼–ç é—®é¢˜
+        # TODO ½â¾ö IE ä¯ÀÀÆ÷ÏÂµØÖ·À¸ÊäÈëÖĞÎÄ³öÏÖ±àÂë´íÎóµÄÇé¿ö
+        # TODO google ÊÇÖ±½Ó½«ÔÚµØÖ·À¸ÊäÈëµÄ²ÎÊıÖØ¶¨ÏòÎª '' , ²»ÓÃÄÇÃ´¸´ÔÓ
+        # query = web.ctx.query # Ëü¼° web.input() ½«×Ö·û¶¼±ä³ÉÁËÀàËÆ u'%B3%B5' µ¼ÖÂ²»ÄÜ²Â²â±àÂë 
+        query = web.ctx.env['QUERY_STRING'] # ½â¾ö·Ç IE ä¯ÀÀÆ÷ÏÂµØÖ·À¸ÊäÈëÖĞÎÄ³öÏÖµÄ±àÂëÎÊÌâ
         # print query
         if query == '':
             return web.badrequest()
@@ -179,18 +192,18 @@ class QR(object):
             query = query.split('&')
             try:
                 # query = dict([tuple(i) for i in ])
-                values = [x.split('=') for x in query] # åˆ†å‰²å‚æ•°
+                values = [x.split('=') for x in query] # ·Ö¸î²ÎÊı
                 query = {}
                 for i in values:
-                    if len(i) == 1 and i[0] == 'chld': # chld æ˜¯éå¿…éœ€å‚æ•°
+                    if len(i) == 1 and i[0] == 'chld': # chld ÊÇ·Ç±ØĞè²ÎÊı
                         query.setdefault(i[0], 'M|4')
                     elif len(i) == 2 and i[0] in ['chl', 'chs', 'chld']:
                         query.setdefault(i[0], i[1])
                 # print query
             except:
                 return web.badrequest()
-            chl = query.get('chl', '') # TODO å¿…éœ€å‚æ•°ä¸è®¾é»˜è®¤å€¼ç›´æ¥æŠ›å‡º400 error
-            chl = chl.replace('+', '%20') # è§£å†³ç©ºæ ¼å˜åŠ å·ï¼Œæ›¿æ¢ç©ºæ ¼ä¸º '%20'
+            chl = query.get('chl', '') # TODO ±ØĞè²ÎÊı²»ÉèÄ¬ÈÏÖµÖ±½ÓÅ×³ö400 error
+            chl = chl.replace('+', '%20') # ½â¾ö¿Õ¸ñ±ä¼ÓºÅ£¬Ìæ»»¿Õ¸ñÎª '%20'
             chs = query.get('chs', '300x300')
             chld = query.get('chld', 'M|4')
         # print repr(chl)
@@ -198,23 +211,32 @@ class QR(object):
         chl = urllib2.unquote(chl)
         # print repr(chl)
         import charset
-        chl = charset.encode(chl) # å°†å­—ç¬¦ä¸²è§£ç ç„¶åæŒ‰ utf8 ç¼–ç 
+        chl = charset.encode(chl) # ½«×Ö·û´®½âÂëÈ»ºó°´ utf8 ±àÂë
         # print repr(chl)
-        # TODO å¦‚æœç¼–ç ä¸æ˜¯ utf8ï¼Œç¼–ç (quote())åé‡å®šå‘åˆ° UTF8 ç¼–ç åçš„é“¾æ¥
-        MIME, data = self.show_image(chl, chld, chs)
+        # TODO Èç¹û±àÂë²»ÊÇ utf8£¬±àÂë(quote())ºóÖØ¶¨Ïòµ½ UTF8 ±àÂëºóµÄÁ´½Ó
+        args = self.handle_parameter(chl, chld, chs)
+        MIME, data = self.show_image(args['version'],
+                                    args['error_correction'],
+                                    args['box_size'], args['border'],
+                                    args['content'], args['size'])
         web.header('Content-Type', MIME)
         return data
 
     def POST(self):
-        """å¤„ç† POST æ•°æ®
+        """´¦Àí POST Êı¾İ
         """
         query = web.input(chl='', chld='M|4', chs='300x300')
-        # å› ä¸º web.input() çš„è¿”å›çš„æ˜¯ unicode ç¼–ç çš„æ•°æ®ï¼Œ
-        # æ‰€ä»¥å°†æ•°æ®æŒ‰ utf8 ç¼–ç ä»¥ä¾¿ç”¨æ¥ç”ŸæˆäºŒç»´ç 
+        # ÒòÎª web.input() µÄ·µ»ØµÄÊÇ unicode ±àÂëµÄÊı¾İ£¬
+        # ËùÒÔ½«Êı¾İ°´ utf8 ±àÂëÒÔ±ãÓÃÀ´Éú³É¶şÎ¬Âë
         chl = query.chl.encode('utf8')
         chs = query.chs
         chld = query.chld
-        MIME, data = self.show_image(chl, chld, chs)
+        args = self.handle_parameter(chl, chld, chs)
+        MIME, data = self.show_image(args['version'],
+                                    args['error_correction'],
+                                    args['box_size'], args['border'],
+                                    args['content'], args['size'])
+        MIME, data = self.show_image()
         web.header('Content-Type', MIME)
         return data
 
