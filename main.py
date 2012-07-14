@@ -58,17 +58,17 @@ class QR(object):
         chld = chld.split('|') # chld 是非必需参数
         if len(chld) == 2:
             try:
-                self.border = int(chld[1])
+                border = int(chld[1])
             except:
                 # raise web.badrequest()
-                self.version = 4
+                version = 4
         elif len(chld) == 1:
-            self.border = 4
+            border = 4
         if chld[0] not in ['L', 'M', 'Q', 'H']:
             chld[0] = 'M'
-        if self.border < 0:
+        if border < 0:
             # raise web.badrequest()
-            self.border = 4
+            border = 4
         try:
             chs = string.lower(chs) # 转换为小写字母
             size = tuple([int(i) for i in chs.split('x')])
@@ -77,11 +77,10 @@ class QR(object):
         else:
             if (size[0] * size[1] == 0 or size[0] < 0 or size[1] < 0 or ( # 处理负数及零的情况
                     # size[0] < 21) or size[1] < 21 or (
-                    size[0] > 500) or size[1] > 500): # 限制图片大小，防止图片太小太大导致系统死机
+                    size[0] > 500) or size[1] > 500): # 限制图片大小，防止图片太大导致系统死机
                 raise web.badrequest()
-        # self.version = 4
-        self.box_size = 10
-        self.size = size[0] if size[0] <= size[1] else size[1]
+        box_size = 10
+        size = size[0] if size[0] <= size[1] else size[1]
         # L,M,Q,H 纠错级别下 1~40 版本的最大容量(Binary)
         l_max = [17, 32, 53, 78, 106, 134, 154, 192, 230, 271, 321,
                 367, 425, 458, 520, 586, 644, 718, 792, 858, 929,
@@ -101,46 +100,46 @@ class QR(object):
                 177, 194, 220, 250, 280, 310, 338, 382, 403, 439,
                 461, 511, 535, 593, 625, 658, 698, 742, 790, 842,
                 898, 958, 983, 1051, 1093, 1139, 1219, 1273]
-        self.level = chld[0] # 纠错级别
+        level = chld[0] # 纠错级别
         # 根据纠错级别及字符数选定版本。
-        if self.level == 'L':
+        if level == 'L':
             for i in l_max:
                 if len(chl) < i:
-                    self.version = l_max.index(i) + 1
+                    version = l_max.index(i) + 1
                     break
-            self.error_correction = qrcode.constants.ERROR_CORRECT_L
-        elif self.level == 'M':
+            error_correction = qrcode.constants.ERROR_CORRECT_L
+        elif level == 'M':
             for i in m_max:
                 if len(chl) < i:
-                    self.version = m_max.index(i) + 1
+                    version = m_max.index(i) + 1
                     break
-            self.error_correction = qrcode.constants.ERROR_CORRECT_M
-        elif self.level == 'Q':
+            error_correction = qrcode.constants.ERROR_CORRECT_M
+        elif level == 'Q':
             for i in q_max:
                 if len(chl) < i:
-                    self.version = q_max.index(i) + 1
+                    version = q_max.index(i) + 1
                     break
-            self.error_correction = qrcode.constants.ERROR_CORRECT_Q
-        elif self.level == 'H':
+            error_correction = qrcode.constants.ERROR_CORRECT_Q
+        elif level == 'H':
             for i in h_max:
                 if len(chl) < i:
-                    self.version = h_max.index(i) + 1
+                    version = h_max.index(i) + 1
                     break
-            self.error_correction = qrcode.constants.ERROR_CORRECT_H
+            error_correction = qrcode.constants.ERROR_CORRECT_H
         print len(chl)
-        print self.version
-        print self.size, self.border
+        print version
+        print size, border
         # 根据 qrcode 源码、size 及 version 参数求 box_size
-        self.box_size = self.size/((self.version * 4 + 17) + self.border * 2)
-        print self.box_size
-        if self.box_size == 0:
+        box_size = size/((version * 4 + 17) + border * 2)
+        print box_size
+        if box_size == 0:
             im = Image.new("1", (1, 1), "white")
         else:
             qr = qrcode.QRCode(
-                version=self.version,
-                error_correction=self.error_correction,
-                box_size=self.box_size,
-                border=self.border,
+                version = version,
+                error_correction = error_correction,
+                box_size = box_size,
+                border = border,
             )
             qr.add_data(chl)
             qr.make(fit=True)
