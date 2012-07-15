@@ -6,7 +6,12 @@ import StringIO
 import string
 import web
 import qrcode
+try:
+    from PIL import Image, ImageDraw
+except ImportError:
+    import Image, ImageDraw
 from mime import ImageMIME
+import charset
 
 import sys
 if sys.getdefaultencoding() != 'utf-8':
@@ -14,12 +19,12 @@ if sys.getdefaultencoding() != 'utf-8':
     sys.setdefaultencoding('utf-8')
 
 web.config.debug = False
-
 urls = (
-    '/', 'Index',
-    '/qr', 'QR',
+    '/', 'Index', # 首页
+    '/qr', 'QR',  # 二维码图片
 )
 
+# 判断是线上还是本地环境
 if 'SERVER_SOFTWARE' in os.environ:
     # SAE
     site = 'http://%s.sinaapp.com' % (os.environ.get('APP_NAME'))
@@ -27,14 +32,17 @@ else:
     # Local
     site = 'http://127.0.0.1:8080' # TODO 获取自定义的端口
 
-app_root = os.path.dirname(__file__)
-templates_root = os.path.join(app_root, 'templates')
+# 应用模板
+app_root = os.path.dirname(__file__) # 文件所在文件夹路径
+templates_root = os.path.join(app_root, 'templates') # 模板路径
 render = web.template.render(templates_root)
 app = web.application(urls, globals())
-web.template.Template.globals['site'] = site
+web.template.Template.globals['site'] = site # 模板全局变量
 
 
 class Index(object):
+    """首页
+    """
     def GET(self):
         return render.index()
 
@@ -47,22 +55,23 @@ class QR(object):
         if len(chl) > 2953: # 最大容量
             chl = chl[:2952]
             # chl = ''
-        chld = string.upper(chld) # 转换为大小字母
+        chld = string.upper(chld) # 转换为大写字母
+        # chld 是非必需参数，有默认值
         if chld == '':
             chld = 'M|4'
-        chld = chld.split('|') # chld 是非必需参数
-        if len(chld) == 2:
+        # 处理 chld 参数值
+        chld = chld.split('|')
+        if len(chld) == 2: # e.g. 'M|2'
             try:
-                border = int(chld[1])
+                border = int(chld[1]) # 二维码与图片的边距
             except:
-                # raise web.badrequest()
-                version = 4
-        elif len(chld) == 1:
+                border = 4
+        elif len(chld) == 1: # e.g. 'M'
             border = 4
-        if chld[0] not in ['L', 'M', 'Q', 'H']:
-            chld[0] = 'M'
+        level = chld[0] # 纠错级别
+        if level not in ['L', 'M', 'Q', 'H']:
+            level = 'M' # 纠错级别
         if border < 0:
-            # raise web.badrequest()
             border = 4
         try:
             chs = string.lower(chs) # 转换为小写字母
@@ -70,11 +79,14 @@ class QR(object):
         except:
             raise web.badrequest()
         else:
-            if (size[0] * size[1] == 0 or size[0] < 0 or size[1] < 0 or ( # 处理负数及零的情况
+            # 处理负数及零的情况
+            # 限制图片大小，防止图片太大导致系统死机
+            if (size[0] * size[1] == 0 or size[0] < 0 or size[1] < 0 or ( 
                     # size[0] < 21) or size[1] < 21 or (
-                    size[0] > 800) or size[1] > 800): # 限制图片大小，防止图片太大导致系统死机
+                    size[0] > 800) or size[1] > 800):
                 raise web.badrequest()
-        box_size = 10
+        # 由于生成的二维码图片是个正方形，所以由 size 的最小值组成的正方形
+        # 来限制二维码图片大小
         square_size = size[0] if size[0] <= size[1] else size[1]
         # L,M,Q,H 纠错级别下 1~40 版本的最大容量(Binary)
         l_max = [17, 32, 53, 78, 106, 134, 154, 192, 230, 271, 321,
@@ -95,7 +107,6 @@ class QR(object):
                 177, 194, 220, 250, 280, 310, 338, 382, 403, 439,
                 461, 511, 535, 593, 625, 658, 698, 742, 790, 842,
                 898, 958, 983, 1051, 1093, 1139, 1219, 1273]
-        level = chld[0] # 纠错级别
         # 根据纠错级别及字符数选定版本。
         if level == 'L':
             for i in l_max:
@@ -140,13 +151,8 @@ class QR(object):
                     content, size):
         """返回图片 MIME 及 内容，用于显示图片
         """
-        # Try to import PIL in either of the two ways it can be installed.
-        try:
-            from PIL import Image, ImageDraw
-        except ImportError:
-            import Image, ImageDraw
         if box_size == 0:
-            im = Image.new("1", (1, 1), "white")
+            im = Image.new("1", (1, 1), "white") # 空白图片
         else:
             qr = qrcode.QRCode(
                 version = version,
@@ -158,9 +164,10 @@ class QR(object):
             qr.make(fit=True)
             im = qr.make_image()
         # im.show()
+        # 由于没有文件 写 权限，所以将图片临时保存到内存
         img_name = StringIO.StringIO()
         im.save(img_name, 'png')
-        img_data = img_name.getvalue()
+        img_data = img_name.getvalue() # 获取图片内容
         im = Image.open(StringIO.StringIO(img_data))
         # im.show()
         x, y = im.size
@@ -169,49 +176,52 @@ class QR(object):
         rx, ry = size
         # TODO 缩放太小不能识别则显示空白，判断图片清晰度
         new_im = Image.new("1", (rx, ry), "white")
-        paste_size = ((rx-x)/2, (ry-y)/2, (rx-x)/2 + x, (ry-y)/2 + y)
+        # 将二维码图片粘贴到空白图片中，保持二维码图片居中
+        paste_size = ((rx-x)/2, (ry-y)/2, (rx-x)/2 + x, (ry-y)/2 + y) #粘贴位置
         # print paste_size
         new_im.paste(im, paste_size)
-        img_name.close()
+        img_name.close() # 释放内存
         new_im_name = StringIO.StringIO()
-        new_im.save(new_im_name, 'png')
+        new_im.save(new_im_name, 'png') # 保存粘贴好的图片
         new_im_data = new_im_name.getvalue()
+        # 图片 MIME 类型
         MIME = ImageMIME().get_image_type(new_im_data)
         new_im_name.close()
         return (MIME, new_im_data)
 
     def GET(self):
         # TODO 解决 IE 浏览器下地址栏输入中文出现编码错误的情况
-        # TODO google 是直接将在地址栏输入的参数重定向为 '' , 不用那么复杂
-        # query = web.ctx.query # 它及 web.input() 将字符都变成了类似 u'%B3%B5' 导致不能猜测编码 
-        query = web.ctx.env['QUERY_STRING'] # 解决非 IE 浏览器下地址栏输入中文出现的编码问题
-        # print query
-        if query == '':
+        # querys = web.ctx.query # 它及 web.input() 将字符都变成了类似 u'%B3%B5' 导致不能解码
+        # 解决非 IE 浏览器下地址栏输入中文出现的编码问题， IE 浏览器暂时无解
+        querys = web.ctx.env['QUERY_STRING']
+        # print querys
+        if querys == '':
             return web.badrequest()
         else:
-            query = query.split('&')
+            querys = querys.split('&')
             try:
-                values = [x.split('=') for x in query] # 分割参数
-                query = {}
+                # 分割参数，能处理类似 'chl===hello&chls=200x200&chld=M|3'
+                values = (x.split('=', 1) for x in querys)
+                # print [x.split('=', 1) for x in querys]
+                querys = {}
                 for i in values:
                     if len(i) == 1 and i[0] == 'chld': # chld 是非必需参数
-                        query.setdefault(i[0], 'M|4')
+                        querys.setdefault(i[0], 'M|4')
                     elif len(i) == 2 and i[0] in ['chl', 'chs', 'chld']:
-                        query.setdefault(i[0], i[1])
-                # print query
+                        querys.setdefault(i[0], i[1])
+                # print querys
             except:
                 return web.badrequest()
-            chl = query.get('chl')
+            chl = querys.get('chl')
             chl = chl.replace('+', '%20') # 解决空格变加号，替换空格为 '%20'
-            chs = query.get('chs')
+            chs = querys.get('chs')
             if chl is None or chs is None:
                 return web.badrequest()
-            chld = query.get('chld', 'M|4')
+            chld = querys.get('chld', 'M|4')
         # print repr(chl)
         import urllib2
         chl = urllib2.unquote(chl)
         # print repr(chl)
-        import charset
         chl = charset.encode(chl) # 将字符串解码然后按 utf8 编码
         if chl is None:
             return web.badrequest()
@@ -228,14 +238,14 @@ class QR(object):
     def POST(self):
         """处理 POST 数据
         """
-        query = web.input(chs='300x300')
+        querys = web.input(chs='300x300')
         # 因为 web.input() 的返回的是 unicode 编码的数据，
         # 所以将数据按 utf8 编码以便用来生成二维码
-        chl = query.chl.encode('utf8')
-        chs = query.chs
+        chl = querys.chl.encode('utf8')
+        chs = querys.chs
         if chl is None or chs is None:
             return web.badrequest()
-        chld = query.chld
+        chld = querys.chld
         args = self.handle_parameter(chl, chld, chs)
         MIME, data = self.show_image(args['version'],
                                     args['error_correction'],
