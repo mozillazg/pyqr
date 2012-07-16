@@ -2,6 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
+app_root = os.path.dirname(__file__)
+sys.path.insert(0, os.path.join(app_root, 'lib'))
+
+if sys.getdefaultencoding() != 'utf-8':
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+
 import StringIO
 import string
 import web
@@ -12,11 +20,6 @@ except ImportError:
     import Image, ImageDraw
 from mime import ImageMIME
 import charset
-
-import sys
-if sys.getdefaultencoding() != 'utf-8':
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
 
 web.config.debug = False
 urls = (
