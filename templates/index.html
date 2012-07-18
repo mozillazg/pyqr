@@ -9,17 +9,12 @@ $def with()
         <meta charset="utf-8" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="description" content="Online QR Code Generator" />
-        <link href="/static/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+        <link href="$site/static/favicon.ico" rel="shortcut icon" type="image/x-icon" />
         <style>
             body, ul, select, button {
               font-family: Arial Unicode MS,Arial,sans-serif;
               font-size: small;
             }
-            /*#main {
-                margin: 4em auto;
-                max-width: 35em;
-                min-width: 13em;
-            }*/
             #header {
               background-color: #DDE3E9;
               border-bottom: 1px solid #F2F7FC;
@@ -41,13 +36,10 @@ $def with()
                 font-size: 14px;
             }
             #form {
-                /*margin: 1em;*/
                 font-size: 11px;
                 margin: 0 auto;
                 padding: 12px;
                 width: 600px;
-                /*width: 800px;*/
-
             }
             #form .first {
                 color: #5E6B75;
@@ -96,7 +88,7 @@ $def with()
             }
 
             .required {
-                background: url("/static/required-field-bg.png") repeat-y scroll 0 0 #FFFFFF;
+                background: url("$site/static/required-field-bg.png") repeat-y scroll 0 0 #FFFFFF;
             }
 
             .fixed {
@@ -106,18 +98,14 @@ $def with()
                 list-style-type: none;
                 padding-left: 0px;
                 margin-top: 0.2em;
-               /* display: table-row;*/
-            }/*
-            li.first, li.second {
-                display: table-cell;
-            }*/
+            }
             .button {
               -moz-border-bottom-colors: none;
               -moz-border-image: none;
               -moz-border-left-colors: none;
               -moz-border-right-colors: none;
               -moz-border-top-colors: none;
-              background: url("/static/hborder.png") repeat-x scroll 0 -2077px transparent;
+              background: url("$site/static/hborder.png") repeat-x scroll 0 -2077px transparent;
               border-color: #BBBBBB #BBBBBB #A0A0A0;
               border-radius: 3px 3px 3px 3px;
               border-style: solid;
@@ -193,7 +181,7 @@ $def with()
 
         <div class="fixed"></div>
         <div id="footer">
-            <a href="https://github.com/mozillazg/pyqr" title="api,souce code">api|source code</a>
+            <a href="https://github.com/mozillazg/pyqr" title="api,souce code">api&source code</a>
         </div>
     </div>
     </body>
