@@ -20,10 +20,7 @@
 
 * chl='test' 二维码包含的文本信息（必需）
 * chs='300x300' 图片尺寸（必需）
-* chld='M|4' 纠错级别（L,M,H,Q）及二维码离图片边框的距离（非必需，默认为'M|4'）
-
-详细 api：
-[google qrcode api](https://google-developers.appspot.com/chart/infographics/docs/qr_codes)
+* chld='M|4' 纠错级别（L(7%),M(15%),Q(25%),H(30%)）及二维码离图片边框的距离（非必需，默认为'M|4'）
 
 ## TODO
 
