@@ -3,7 +3,7 @@
 
 import os
 import sys
-# 将 lib 目录添加到达系统路径，方便导入 lib 目录下的模块
+# 将 lib 目录添加到系统路径，以便导入 lib 目录下的模块
 app_root = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(app_root, 'lib'))
 
