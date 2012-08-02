@@ -50,6 +50,7 @@ class Index(object):
     def GET(self):
         return render.index()
 
+# TODO 返回具体错误信息
 class QR(object):
     """处理传来的数据并显示 QR Code 二维码图片
     """
@@ -57,7 +58,8 @@ class QR(object):
         """处理表单提交的变量
         """
         if len(chl) > 2953: # 最大容量
-            chl = chl[:2952]
+            # chl = chl[:2953]
+            raise web.badrequest()
             # chl = ''
         chld = string.upper(chld) # 转换为大写字母
         # chld 是非必需参数，有默认值
@@ -117,24 +119,32 @@ class QR(object):
                 if len(chl) < i:
                     version = l_max.index(i) + 1
                     break
+            else: # 如果超出了该纠错级别所能处理的最大字符数，抛出错误异常
+                raise web.badrequest()
             error_correction = qrcode.constants.ERROR_CORRECT_L
         elif level == 'M':
             for i in m_max:
                 if len(chl) < i:
                     version = m_max.index(i) + 1
                     break
+            else:
+                raise web.badrequest()
             error_correction = qrcode.constants.ERROR_CORRECT_M
         elif level == 'Q':
             for i in q_max:
                 if len(chl) < i:
                     version = q_max.index(i) + 1
                     break
+            else:
+                raise web.badrequest()
             error_correction = qrcode.constants.ERROR_CORRECT_Q
         elif level == 'H':
             for i in h_max:
                 if len(chl) < i:
                     version = h_max.index(i) + 1
                     break
+            else:
+                raise web.badrequest()
             error_correction = qrcode.constants.ERROR_CORRECT_H
         # print len(chl)
         # print version
@@ -151,22 +161,30 @@ class QR(object):
                 }
         return args
 
-    def show_image(self, version, error_correction, box_size, border,
-                    content, size):
+    def show_image(self, **args):
         """返回图片 MIME 及 内容，用于显示图片
         """
+        version = args['version']
+        error_correction = args['error_correction']
+        box_size = args['box_size']
+        border = args['border']
+        content = args['content']
+        size = args['size']
         if box_size == 0:
             im = Image.new("1", (1, 1), "white") # 空白图片
         else:
-            qr = qrcode.QRCode(
-                version = version,
-                error_correction = error_correction,
-                box_size = box_size,
-                border = border,
-            )
-            qr.add_data(content)
-            qr.make(fit=True)
-            im = qr.make_image()
+            try: # 生成二维码
+                qr = qrcode.QRCode(
+                    version = version,
+                    error_correction = error_correction,
+                    box_size = box_size,
+                    border = border,
+                )
+                qr.add_data(content)
+                qr.make(fit=True)
+                im = qr.make_image()
+            except:
+                raise web.internalerror()
         # im.show()
         # 由于没有文件 写 权限，所以将图片临时保存到内存
         img_name = StringIO.StringIO()
@@ -232,10 +250,7 @@ class QR(object):
         # print repr(chl)
         # TODO 如果编码不是 utf8，编码(quote())后重定向到 UTF8 编码后的链接
         args = self.handle_parameter(chl, chld, chs)
-        MIME, data = self.show_image(args['version'],
-                                    args['error_correction'],
-                                    args['box_size'], args['border'],
-                                    args['content'], args['size'])
+        MIME, data = self.show_image(**args)
         web.header('Content-Type', MIME)
         return data
 
@@ -251,10 +266,7 @@ class QR(object):
             return web.badrequest()
         chld = querys.chld
         args = self.handle_parameter(chl, chld, chs)
-        MIME, data = self.show_image(args['version'],
-                                    args['error_correction'],
-                                    args['box_size'], args['border'],
-                                    args['content'], args['size'])
+        MIME, data = self.show_image(**args)
         web.header('Content-Type', MIME)
         return data
 
