@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """ 判断图片 MIME 类型
-use:
->> from mime import ImageMIME
->> MIME = ImageMIME().get_image_type(binary)
+usage:
+
+>> mime = ImageMIME().get_mime(binary)
+
+binary: utf8 编码的图片内容
+mime: 图片 MIME 类型，类似"image/png"
 """
 
 class ImageMIME(object):
@@ -19,7 +22,7 @@ class ImageMIME(object):
         self.ICO = "image/x-icon"
         self.UNKNOWN = "application/octet-stream"
 
-    def get_image_type(self, binary):
+    def get_mime(self, binary):
         size = len(binary)
         if size >= 6 and binary.startswith("GIF"):
             return self.GIF
@@ -37,4 +40,3 @@ class ImageMIME(object):
             return self.ICO
         else:
             return self.UNKNOWN
-

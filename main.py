@@ -1,18 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import sys
-# 将 lib 目录添加到系统路径，以便导入 lib 目录下的模块
-app_root = os.path.dirname(__file__)
-sys.path.insert(0, os.path.join(app_root, 'lib'))
-
-if sys.getdefaultencoding() != 'utf-8':
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
-
+import os
 import StringIO
 import string
+import gettext
 import web
 import qrcode
 try:
@@ -21,34 +14,70 @@ except ImportError:
     import Image, ImageDraw
 from mime import ImageMIME
 import charset
+import conf
 
-web.config.debug = False
-urls = (
-    '/', 'Index', # 首页
-    '/qr', 'QR',  # 二维码图片
-)
+render = conf.render
+localedir = conf.localedir
+localefile = conf.localefile
 
-# 判断是线上还是本地环境
-if 'SERVER_SOFTWARE' in os.environ:
-    # SAE
-    site = 'http://%s.sinaapp.com' % (os.environ.get('APP_NAME'))
-else:
-    # Local
-    site = 'http://127.0.0.1:8080' # TODO 获取自定义的端口
+# 储存译文的对象
+allTranslations = web.storage()
 
-# 应用模板
-app_root = os.path.dirname(__file__) # 文件所在文件夹路径
-templates_root = os.path.join(app_root, 'templates') # 模板路径
-render = web.template.render(templates_root)
-app = web.application(urls, globals())
-web.template.Template.globals['site'] = site # 模板全局变量
+def get_translations(lang='en_US'):
+    # 初始化译文
+    if allTranslations.has_key(lang):
+        translation = allTranslations[lang]
+    elif lang is None:
+        translation = gettext.NullTranslations()
+    else:
+        try:
+            translation = gettext.translation(
+                    localefile,
+                    localedir,
+                    languages=[lang],
+                    )
+        except IOError:
+            translation = gettext.NullTranslations()
+    return translation
+
+def load_translations(lang):
+    """返回当前语言对应译文"""
+    lang = str(lang)
+    translation  = allTranslations.get(lang)
+    if translation is None:
+        translation = get_translations(lang)
+        allTranslations[lang] = translation
+
+        # 删除未使用的译文
+        for lk in allTranslations.keys():
+            if lk != lang:
+                del allTranslations[lk]
+    return translation
+
+def custom_gettext(string):
+    """返回给定字符串对应的译文"""
+    translation = load_translations(web.cookies().get('lang'))
+    if translation is None:
+        return unicode(string)
+    return translation.ugettext(string)
+
+web.template.Template.globals['_'] = custom_gettext
 
 
 class Index(object):
     """首页
     """
     def GET(self):
-        return render.index()
+        i = web.input()
+        lang = i.get('lang')
+        if lang is None:
+            return render.index()
+        else:
+            # Debug.
+            print >> sys.stderr, 'Language:', lang
+            
+            web.setcookie('lang', lang, 60*60*5)
+            return web.seeother('/')
 
 # TODO 返回具体错误信息
 class QR(object):
@@ -207,7 +236,7 @@ class QR(object):
         new_im.save(new_im_name, 'png') # 保存粘贴好的图片
         new_im_data = new_im_name.getvalue()
         # 图片 MIME 类型
-        MIME = ImageMIME().get_image_type(new_im_data)
+        MIME = ImageMIME().get_mime(new_im_data)
         new_im_name.close()
         return (MIME, new_im_data)
 
@@ -272,4 +301,3 @@ class QR(object):
 
 if __name__ == '__main__':
     app.run()
-

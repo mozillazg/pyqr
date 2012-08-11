@@ -4,15 +4,15 @@ $def with()
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Online QR Code Generator</title>
+        <title>$_("Online QR Code Generator")</title>
 
         <meta charset="utf-8" />
-        <meta name="description" content="Online QR Code Generator" />
+        <meta name="description" content="$_('Online QR Code Generator')" />
         <link href="$site/static/favicon.ico" rel="shortcut icon" type="image/x-icon" />
         <style>
             body, ul, select, button {
               font-family: Arial Unicode MS,Arial,sans-serif;
-              font-size: small;
+              font-size: 12px;
             }
             #header {
               background-color: #DDE3E9;
@@ -25,7 +25,7 @@ $def with()
             }
             #header h1 {
               border-bottom: 1px solid #C8D0D9;
-              font-size: 15px;
+              font-size: 16px;
               font-weight: bold;
               margin: 0;
               padding: 12px;
@@ -35,14 +35,14 @@ $def with()
                 font-size: 14px;
             }
             #form {
-                font-size: 11px;
+                font-size: 12px;
                 margin: 0 auto;
                 padding: 12px;
                 width: 600px;
             }
             #form .first {
                 color: #5E6B75;
-                font-size: 11px;
+                font-size: 12px;
                 font-weight: bold;
                 padding: 4px 0;
                 text-align: right;
@@ -54,7 +54,7 @@ $def with()
             }
             #form .second {
                 color: #5E6B75;
-                font-size: 11px;
+                font-size: 12px;
                 font-weight: bold;
                 width: 270px;
                 float: left;
@@ -116,7 +116,7 @@ $def with()
               text-decoration: none;
             }
             #footer {
-              padding-top: 12px;
+              padding-top: 20px;
               text-align: center;
               width: 100%;
               color: #5E6B75;
@@ -124,6 +124,18 @@ $def with()
             #footer a {
               color: #5E6B75;
               text-decoration: none;
+              padding:0 3px;
+            }
+            #footer-contents {
+              margin: auto;
+              width: 600px;
+            }
+            #api {
+              float: left;
+              margin: 0 0 0 200px;
+            }
+            #lang {
+              float: auto;
             }
         </style>
     </head>
@@ -131,7 +143,7 @@ $def with()
     <div id="main">
         <div id="header">
             <h1>
-                Online QR Code Generator
+                $_("Online QR Code Generator")
                 <span>by mozillazg</span>
             </h1>
         </div>
@@ -139,7 +151,7 @@ $def with()
             <form method="get" action="$site/qr">
                 <ul class="none">
                     <li class="first">
-                        <label for="text">Text content</label>
+                        <label for="text">$_("Text content")</label>
                     </li>
                     <li class="second">
                         <textarea id="text" class="textarea required" name="chl" required="true" autofocus="true" rows="5" value=""></textarea>
@@ -147,22 +159,22 @@ $def with()
                 </ul>
                 <div class="fixed"></div>
                 <ul class="none">
-                    <li class="first">Barcode size</li>
+                    <li class="first">$_("Barcode size")</li>
                     <li class="second">
                         <select name="chs" class="listbox">
-                            <option value="120x120">Small</option>
-                            <option value="230x230">Medium</option>
-                            <option value="350x350" selected="selected">Large</option>
+                            <option value="120x120">$_("Small")</option>
+                            <option value="230x230">$_("Medium")</option>
+                            <option value="350x350" selected="selected">$_("Large")</option>
                         </select>
                     </li>
                 </ul>
                 <div class="fixed"></div>
                 <ul class="none">
-                    <li class="first">Error correction</li>
+                    <li class="first">$_("Error correction")</li>
                     <li class="second">
                         <select name="chld" class="listbox">
                             <option value="L">L</option>
-                            <option value="M"  selected="selected">M</option>
+                            <option value="M" selected="selected">M</option>
                             <option value="Q">Q</option>
                             <option value="H">H</option>
                         </select>
@@ -172,7 +184,7 @@ $def with()
                 <ul class="none">
                     <li class="first"></li>
                     <li class="second">
-                        <button class="button" type="submit" >Generate →</button>
+                        <button class="button" type="submit" >$_("Generate")</button>
                     </li>
                 </ul>
             </form>
@@ -180,9 +192,15 @@ $def with()
 
         <div class="fixed"></div>
         <div id="footer">
-            <a href="https://github.com/mozillazg/pyqr" title="api,souce code">api&amp;source code</a>
+            <div id="footer-contents">
+                <div id="api">
+                    <a href="https://github.com/mozillazg/pyqr" title="$_('API & Souce Code')">$_("API & Source Code")</a>
+                </div>
+                <div id="lang">
+                    <a href="?lang=zh_CN" title="$_('Chinese (Simplified)')">$_("zh")</a>|<a href="?lang=en_US" title="$_('English (US)')">$_("en")</a>
+                </div>
+            </div>
         </div>
     </div>
     </body>
 </html>
-
