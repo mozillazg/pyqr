@@ -28,20 +28,11 @@ urls = (
     '/qr', 'QR',  # 二维码图片
 )
 
-# 判断是线上还是本地环境
-if 'SERVER_SOFTWARE' in os.environ:
-    # SAE
-    site = 'http://%s.sinaapp.com' % (os.environ.get('APP_NAME'))
-else:
-    # Local
-    site = 'http://127.0.0.1:8080' # TODO 获取自定义的端口
-
 # 应用模板
 app_root = os.path.dirname(__file__) # 文件所在文件夹路径
 templates_root = os.path.join(app_root, 'templates') # 模板路径
 render = web.template.render(templates_root)
 app = web.application(urls, globals())
-web.template.Template.globals['site'] = site # 模板全局变量
 
 
 class Index(object):

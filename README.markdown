@@ -6,7 +6,6 @@
 * [web.py]( http://webpy.org/)
 * [python-qrcode](https://github.com/lincolnloop/python-qrcode)
 * [PIL](http://www.pythonware.com/products/pil/index.htm)
-* [SAE](http://sae.sina.com.cn/)
 
 ## 功能
 
@@ -21,10 +20,6 @@
 * chl='test' 二维码包含的文本信息（必需）
 * chs='300x300' 图片尺寸（必需）
 * chld='M|4' 纠错级别（L(7%),M(15%),Q(25%),H(30%)）及二维码离图片边框的距离（非必需，默认为'M|4'）
-
-## TODO
-
-i18n
 
 ## Demo
 

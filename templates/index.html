@@ -8,7 +8,7 @@ $def with()
 
         <meta charset="utf-8" />
         <meta name="description" content="Online QR Code Generator" />
-        <link href="$site/static/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+        <link href="/static/favicon.ico" rel="shortcut icon" type="image/x-icon" />
         <style>
             body, ul, select, button {
               font-family: Arial Unicode MS,Arial,sans-serif;
@@ -87,7 +87,7 @@ $def with()
             }
 
             .required {
-                background: url("$site/static/required-field-bg.png") repeat-y scroll 0 0 #FFFFFF;
+                background: url("/static/required-field-bg.png") repeat-y scroll 0 0 #FFFFFF;
             }
 
             .fixed {
@@ -104,7 +104,7 @@ $def with()
               -moz-border-left-colors: none;
               -moz-border-right-colors: none;
               -moz-border-top-colors: none;
-              background: url("$site/static/hborder.png") repeat-x scroll 0 -2077px transparent;
+              background: url("/static/hborder.png") repeat-x scroll 0 -2077px transparent;
               border-color: #BBBBBB #BBBBBB #A0A0A0;
               border-radius: 3px 3px 3px 3px;
               border-style: solid;
@@ -136,7 +136,7 @@ $def with()
             </h1>
         </div>
         <div id="form">
-            <form method="get" action="$site/qr">
+            <form method="get" action="/qr">
                 <ul class="none">
                     <li class="first">
                         <label for="text">Text content</label>
