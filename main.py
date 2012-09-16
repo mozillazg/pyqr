@@ -12,13 +12,31 @@ try:
     from PIL import Image, ImageDraw
 except ImportError:
     import Image, ImageDraw
+
+# 将 lib 目录添加到系统路径，以便导入 lib 目录下的模块
+app_root = os.path.dirname(__file__)
+sys.path.insert(0, os.path.join(app_root, 'lib'))
+
 from mime import ImageMIME
 import charset
-import conf
 
-render = conf.render
-localedir = conf.localedir
-localefile = conf.localefile
+web.config.debug = True
+urls = (
+    # 首页
+    '/', 'Index',
+    # 二维码图片
+    '/qr', 'QR',
+)
+# 应用模板
+# 模板路径
+templates_root = os.path.join(app_root, 'templates')
+render = web.template.render(templates_root)
+# 注册一个全局应用
+app = web.application(urls, globals())
+# 本地化语言文件路径
+localedir = app_root + '/i18n'
+# 语言文件名称
+localefile = 'messages'
 
 # 储存译文的对象
 allTranslations = web.storage()
