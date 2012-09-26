@@ -10,3 +10,6 @@
 /²Î¿¼
 /static/robots.txt
 *.wsgic
+/run_server.py
+/bae
+/lib/qrcode
