@@ -179,14 +179,14 @@ class QR(object):
                 im = qr.make_image()
             except:
                 raise web.internalerror()
+
         # im.show()
         # 将生成的二维码图片保存到临时文件中，用于下面的缩放处理
         tempfile.tempdir = 'temp'
-        img_name = tempfile.TemporaryFile()
-        im.save(img_name, 'png')
-        img_name.seek(0)
-        img_data = img_name.read()  # 获取图片内容
-
+        temp_img = tempfile.TemporaryFile()
+        im.save(temp_img, 'png')
+        temp_img.seek(0)
+        img_data = temp_img.read()  # 获取图片内容
         im = Image.open(StringIO.StringIO(img_data))
         x, y = im.size
         rx, ry = size
@@ -195,18 +195,17 @@ class QR(object):
         # 将二维码图片粘贴到空白图片中，保持二维码图片居中
         paste_size = ((rx - x) / 2, (ry - y) / 2, (rx - x) / 2 + x,
                       (ry - y) / 2 + y)  # 粘贴位置
-        # print paste_size
         new_im.paste(im, paste_size)
-        img_name.close()  # 删除临时文件
+        temp_img.close()  # 删除临时文件
 
-        new_im_name = tempfile.TemporaryFile()
-        new_im.save(new_im_name, 'png')  # 保存粘贴好的图片
-        new_im.seek(0)
-        new_im_data = new_im_name.read()
+        temp_img = tempfile.TemporaryFile()
+        new_im.save(temp_img, 'png')  # 保存粘贴好的图片
+        temp_img.seek(0)
+        new_im_data = temp_img.read()
         # 图片 MIME 类型
         MIME = ImageMIME().get_image_type(new_im_data)
-        new_im_name.close()
-        return MIME, new_im_data
+        temp_img.close()
+        return (MIME, new_im_data)
 
     def GET(self):
         # TODO 解决 IE 浏览器下地址栏输入中文出现编码错误的情况
