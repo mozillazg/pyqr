@@ -1,0 +1,3 @@
+web.py
+PIL
+python-qrcode
