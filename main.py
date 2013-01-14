@@ -1,18 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#import os
-#import sys
- #将 lib 目录添加到系统路径，以便导入 lib 目录下的模块
-#app_root = os.path.dirname(__file__)
-#sys.path.insert(0, os.path.join(app_root, 'lib'))
-
-#if sys.getdefaultencoding() != 'utf-8':
-    #reload(sys)
-    #sys.setdefaultencoding('utf-8')
-
-import tempfile
-import StringIO
+import cStringIO
 import urllib
 import web
 import qrcode
@@ -42,7 +31,6 @@ class Index(object):
         return render.index()
 
 
-# TODO 返回具体错误信息
 class QR(object):
     """处理传来的数据并显示 QR Code 二维码图片
     """
@@ -51,7 +39,7 @@ class QR(object):
         """
         if len(chl) > 2953:  # 最大容量
             raise web.badrequest()
-        chld = chld.upper()  # 转换为大写字母
+        chld = chld.upper()
         # chld 是非必需参数，有默认值
         if not chld:
             chld = 'M|4'
@@ -71,7 +59,7 @@ class QR(object):
             border = 4
 
         try:
-            chs = chs.lower()  # 转换为小写字母
+            chs = chs.lower()
             size = tuple([int(i) for i in chs.split('x')])
         except:
             raise web.badrequest()
@@ -139,9 +127,6 @@ class QR(object):
                 raise web.badrequest()
             error_correction = qrcode.constants.ERROR_CORRECT_H
 
-        # print len(chl)
-        # print version
-        # print size, border
         # 根据 python-qrcode 源码、square_size 及 version 参数求 box_size
         box_size = square_size / ((version * 4 + 17) + border * 2)
         # print box_size
@@ -181,30 +166,27 @@ class QR(object):
                 raise web.internalerror()
 
         # im.show()
-        # 将生成的二维码图片保存到临时文件中，用于下面的缩放处理
-        tempfile.tempdir = 'temp'
-        temp_img = tempfile.TemporaryFile()
+        # 将生成的二维码图片保存到内存中，用于下面的缩放处理
+        temp_img = cStringIO.StringIO()
         im.save(temp_img, 'png')
-        temp_img.seek(0)
-        img_data = temp_img.read()  # 获取图片内容
-        im = Image.open(StringIO.StringIO(img_data))
-        x, y = im.size
-        rx, ry = size
-        # TODO 缩放太小不能识别则显示空白，判断图片清晰度
+        img_data = temp_img.getvalue()  # 获取图片内容
+        im = Image.open(cStringIO.StringIO(img_data))
+        x, y = im.size  # 生成的二维码图片大小
+        rx, ry = size  # 用户请求的图片大小
+
         new_im = Image.new("1", (rx, ry), "white")
-        # 将二维码图片粘贴到空白图片中，保持二维码图片居中
+        # 将二维码图片粘贴到空白图片中并保持二维码图片居中
         paste_size = ((rx - x) / 2, (ry - y) / 2, (rx - x) / 2 + x,
                       (ry - y) / 2 + y)  # 粘贴位置
-        new_im.paste(im, paste_size)
-        temp_img.close()  # 删除临时文件
+        new_im.paste(im, paste_size)  # 若位置全为负值则缩放并填充整个目标图片
 
-        temp_img = tempfile.TemporaryFile()
+        temp_img.write('')
         new_im.save(temp_img, 'png')  # 保存粘贴好的图片
-        temp_img.seek(0)
-        new_im_data = temp_img.read()
+        new_im_data = temp_img.getvalue()
         # 图片 MIME 类型
         MIME = ImageMIME().get_image_type(new_im_data)
-        temp_img.close()
+
+        temp_img.close()  # 释放内存
         return (MIME, new_im_data)
 
     def GET(self):
