@@ -15,13 +15,13 @@
 
 支持 GET 及 POST 请求
 
-参数示例：
+<http://qr.3sd.me/qr?chl=hello+world&chs=350x350&chld=M|6>
 
-* chl='test' 二维码包含的文本信息（必需）
-* chs='300x300' 图片尺寸（必需）
-* chld='M|4' 纠错级别（L(7%),M(15%),Q(25%),H(30%)）及二维码离图片边框的距离（非必需，默认为'M|4'）
+* chl: 二维码包含的文本信息（必需）
+* chs: 图片尺寸（必需）
+* chld: 纠错级别（L(7%),M(15%),Q(25%),H(30%)）及二维码离图片边框的距离（非必需，默认为'M|4'）
 
 ## Demo
 
-<http://pyqr.sinaapp.com>
+<http://qr.3sd.me>
 
