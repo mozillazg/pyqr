@@ -152,18 +152,16 @@ class QR(object):
         if box_size == 0:
             im = Image.new("1", (1, 1), "white")  # 空白图片
         else:
-            try:  # 生成二维码
-                qr = qrcode.QRCode(
-                    version=version,
-                    error_correction=error_correction,
-                    box_size=box_size,
-                    border=border,
-                )
-                qr.add_data(content)
-                qr.make(fit=True)
-                im = qr.make_image()
-            except:
-                raise web.internalerror()
+            # 生成二维码
+            qr = qrcode.QRCode(
+                version=version,
+                error_correction=error_correction,
+                box_size=box_size,
+                border=border,
+            )
+            qr.add_data(content)
+            qr.make(fit=True)
+            im = qr.make_image()
 
         # im.show()
         # 将生成的二维码图片保存到内存中，用于下面的缩放处理
